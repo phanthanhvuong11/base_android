@@ -13,25 +13,6 @@ import java.net.UnknownHostException
 /**
  * @author mvn-vuongphan-dn 10/14/22
  */
-inline fun <T, R> Response<T>.mapSuccess(
-    crossinline block: (T) -> R
-): R {
-    val safeBody = body()
-    if (this.isSuccessful && safeBody != null) {
-        return block(safeBody)
-    } else {
-        throw toError()
-    }
-}
-
-fun <T> Response<T>.mapToRepositoryException(): RepositoryException {
-    return RepositoryException(
-        code = code(),
-        errorBody = errorBody()?.string(),
-        msg = message()
-    )
-}
-
 fun <T> Response<T>.exceptionOnSuccessResponse(): ErrorModel.Http? {
     if (isSuccessful) {
         this.body()?.let { successResponse ->

@@ -15,12 +15,6 @@ import kotlinx.coroutines.launch
 private const val ERROR_FLOW_KEY = "androidx.lifecycle.ErrorFlow"
 private const val LOADING_FLOW_KEY = "androidx.lifecycle.LoadingFlow"
 
-fun <T> T.sendViewError(errorModel: ErrorModel) where T : ViewErrorAware, T : ViewModel {
-    viewModelScope.launch {
-        getErrorMutableSharedFlow().emit(errorModel)
-    }
-}
-
 suspend fun <T> T.emitErrorModel(errorModel: ErrorModel) where T : ViewErrorAware, T : ViewModel {
     getErrorMutableSharedFlow().emit(errorModel)
 }
@@ -33,14 +27,6 @@ val <T> T.viewErrorFlow: SharedFlow<ErrorModel> where T : ViewErrorAware, T : Vi
 val <T> T.loadingFlow: StateFlow<Boolean> where T : LoadingAware, T : ViewModel
     get() {
         return loadingMutableStateFlow
-    }
-
-var <T> T.isLoading: Boolean where T : LoadingAware, T : ViewModel
-    get() {
-        return loadingMutableStateFlow.value
-    }
-    set(value) {
-        loadingMutableStateFlow.tryEmit(value)
     }
 
 private val <T> T.loadingMutableStateFlow: MutableStateFlow<Boolean> where T : LoadingAware, T : ViewModel
@@ -62,13 +48,6 @@ fun <F, T> Flow<FlowResult<F>>.bindLoading(t: T): Flow<FlowResult<F>> where T : 
         .onCompletion {
             t.loadingMutableStateFlow.value = false
         }
-}
-
-fun <F, T> Flow<FlowResult<F>>.bindError(t: T): Flow<FlowResult<F>> where T : ViewErrorAware, T : ViewModel {
-    return this
-        .onError(normalAction = {
-            t.emitErrorModel(it)
-        })
 }
 
 fun <F, T> Flow<FlowResult<F>>.bindCommonError(t: T): Flow<FlowResult<F>> where T : ViewErrorAware, T : ViewModel {
